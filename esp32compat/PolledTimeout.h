@@ -138,7 +138,6 @@ public:
     reset(userTimeout);
   }
 
-  IRAM_ATTR // fast
   bool expired()
   {
     YieldPolicyT::execute(); //in case of DoNothing: gets optimized away
@@ -147,7 +146,6 @@ public:
     return expiredOneShot();
   }
   
-  IRAM_ATTR // fast
   operator bool()
   {
     return expired(); 
@@ -163,15 +161,13 @@ public:
     return _timeout != alwaysExpired;
   }
 
-  IRAM_ATTR // called from ISR
   void reset(const timeType newUserTimeout)
   {
     reset();
     _timeout = TimePolicyT::toTimeTypeUnit(newUserTimeout);
-    _neverExpires = (newUserTimeout < 0) || (newUserTimeout > timeMax());
+    _neverExpires = (newUserTimeout > timeMax());
   }
 
-  IRAM_ATTR // called from ISR
   void reset()
   {
     _start = TimePolicyT::time();
@@ -195,7 +191,6 @@ public:
 
 private:
 
-  IRAM_ATTR // fast
   bool checkExpired(const timeType internalUnit) const
   {
     // canWait() is not checked here
@@ -205,7 +200,6 @@ private:
 
 protected:
 
-  IRAM_ATTR // fast
   bool expiredRetrigger()
   {
     if (!canWait())
@@ -221,7 +215,6 @@ protected:
     return false;
   }
   
-  IRAM_ATTR // fast
   bool expiredOneShot() const
   {
     // returns "always expired" or "has expired"

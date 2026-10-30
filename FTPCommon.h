@@ -2,6 +2,7 @@
 #define FTP_COMMON_H
 
 #include <stdint.h>
+#include <inttypes.h>
 #include <FS.h>
 #include <WiFiClient.h>
 #include <WString.h>
@@ -10,12 +11,21 @@
 #include <PolledTimeout.h>
 using esp8266::polledTimeout::oneShotMs; // import the type to the local namespace
 #define BUFFERSIZE TCP_MSS
-#define PRINTu32 "lu"
+#define PRINTu32 PRIu32
 #elif defined ESP32
 #include "esp32compat/PolledTimeout.h"
 using esp32::polledTimeout::oneShotMs;
+#ifndef CONFIG_TCP_MSS
+#ifdef CONFIG_LWIP_TCP_MSS
+#define CONFIG_TCP_MSS CONFIG_LWIP_TCP_MSS
+#elif defined(TCP_MSS)
+#define CONFIG_TCP_MSS TCP_MSS
+#else
+#define CONFIG_TCP_MSS 1436
+#endif
+#endif
 #define BUFFERSIZE CONFIG_TCP_MSS
-#define PRINTu32 "u"
+#define PRINTu32 PRIu32
 #endif
 
 #define FTP_SERVER_VERSION "0.9.7-20200529"
@@ -126,7 +136,7 @@ protected:
     virtual int8_t dataConnect(); // connects to dataIP:dataPort, returns -1: no data connection possible, +1: data connection established
     bool parseDataIpPort(const char *p);
 
-    uint32_t sTimeOutMs; // disconnect timeout
+    uint32_t sTimeOutMs = 0; // disconnect timeout
     oneShotMs aTimeout;  // timeout from esp8266 core library
 
     bool doFiletoNetwork();
@@ -136,10 +146,10 @@ protected:
     uint16_t allocateBuffer(uint16_t desiredBytes = BUFFERSIZE); // allocate buffer for transfer
     void freeBuffer();
     uint8_t *fileBuffer = NULL; // pointer to buffer for file transfer (by allocateBuffer)
-    uint16_t fileBufferSize;    // size of buffer
+    uint16_t fileBufferSize = 0;    // size of buffer
 
-    uint32_t millisBeginTrans; // store time of beginning of a transaction
-    uint32_t bytesTransfered;  // bytes transfered
+    uint32_t millisBeginTrans = 0; // store time of beginning of a transaction
+    uint32_t bytesTransfered = 0;  // bytes transfered
 };
 
 #endif // FTP_COMMON_H

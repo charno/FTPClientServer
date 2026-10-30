@@ -131,7 +131,11 @@ void FTPServer::handleFTP()
   {
     if (controlServer.hasClient())
     {
+#if (defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)) || (defined(ARDUINO_ESP8266_MAJOR) && (ARDUINO_ESP8266_MAJOR >= 3))
+      control = controlServer.accept();
+#else
       control = controlServer.available();
+#endif
 
       // wait 10s for login command
       aTimeout.reset(10 * 1000);
@@ -909,7 +913,11 @@ int8_t FTPServer::dataConnect()
       if (dataServer.hasClient())
       {
         data.stop();
+#if (defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 3)) || (defined(ARDUINO_ESP8266_MAJOR) && (ARDUINO_ESP8266_MAJOR >= 3))
+        data = dataServer.accept();
+#else
         data = dataServer.available();
+#endif
         FTP_DEBUG_MSG("Got incoming (passive) data connection from %s:%u", data.remoteIP().toString().c_str(), data.remotePort());
       }
       else
